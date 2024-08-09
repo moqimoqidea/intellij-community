@@ -40,6 +40,11 @@ public class K2MoveFileOrDirectoriesTestGenerated extends AbstractK2MoveFileOrDi
         runTest("../../idea/tests/testData/refactoring/moveFile/java/moveFileToAnotherPackage/moveFileToAnotherPackage.test");
     }
 
+    @TestMetadata("java/movePackageWithDestructuringReference/movePackageWithDestructuringReference.test")
+    public void testJava_movePackageWithDestructuringReference_MovePackageWithDestructuringReference() throws Exception {
+        runTest("../../idea/tests/testData/refactoring/moveFile/java/movePackageWithDestructuringReference/movePackageWithDestructuringReference.test");
+    }
+
     @TestMetadata("kotlin/addExtensionImport/addExtensionImport.test")
     public void testKotlin_addExtensionImport_AddExtensionImport() throws Exception {
         runTest("../../idea/tests/testData/refactoring/moveFile/kotlin/addExtensionImport/addExtensionImport.test");
@@ -133,6 +138,11 @@ public class K2MoveFileOrDirectoriesTestGenerated extends AbstractK2MoveFileOrDi
     @TestMetadata("kotlin/moveObject/moveObject.test")
     public void testKotlin_moveObject_MoveObject() throws Exception {
         runTest("../../idea/tests/testData/refactoring/moveFile/kotlin/moveObject/moveObject.test");
+    }
+
+    @TestMetadata("kotlin/movePropertyDelegateReference/movePropertyDelegateReference.test")
+    public void testKotlin_movePropertyDelegateReference_MovePropertyDelegateReference() throws Exception {
+        runTest("../../idea/tests/testData/refactoring/moveFile/kotlin/movePropertyDelegateReference/movePropertyDelegateReference.test");
     }
 
     @TestMetadata("kotlin/moveUnaryOperator/moveUnaryOperator.test")

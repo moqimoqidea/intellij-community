@@ -144,6 +144,11 @@ public abstract class MoveTestGenerated extends AbstractMoveTest {
             runTest("testData/refactoring/moveFile/java/moveFileToAnotherPackage/moveFileToAnotherPackage.test");
         }
 
+        @TestMetadata("java/movePackageWithDestructuringReference/movePackageWithDestructuringReference.test")
+        public void testJava_movePackageWithDestructuringReference_MovePackageWithDestructuringReference() throws Exception {
+            runTest("testData/refactoring/moveFile/java/movePackageWithDestructuringReference/movePackageWithDestructuringReference.test");
+        }
+
         @TestMetadata("kotlin/addExtensionImport/addExtensionImport.test")
         public void testKotlin_addExtensionImport_AddExtensionImport() throws Exception {
             runTest("testData/refactoring/moveFile/kotlin/addExtensionImport/addExtensionImport.test");
@@ -237,6 +242,11 @@ public abstract class MoveTestGenerated extends AbstractMoveTest {
         @TestMetadata("kotlin/moveObject/moveObject.test")
         public void testKotlin_moveObject_MoveObject() throws Exception {
             runTest("testData/refactoring/moveFile/kotlin/moveObject/moveObject.test");
+        }
+
+        @TestMetadata("kotlin/movePropertyDelegateReference/movePropertyDelegateReference.test")
+        public void testKotlin_movePropertyDelegateReference_MovePropertyDelegateReference() throws Exception {
+            runTest("testData/refactoring/moveFile/kotlin/movePropertyDelegateReference/movePropertyDelegateReference.test");
         }
 
         @TestMetadata("kotlin/moveUnaryOperator/moveUnaryOperator.test")

@@ -41,6 +41,7 @@ fun interface UiDataProvider {
       return object : JPanel(BorderLayout()), UiDataProvider {
         init {
           add(component, BorderLayout.CENTER)
+          isOpaque = component.isOpaque
         }
 
         override fun uiDataSnapshot(sink: DataSink) {
@@ -152,6 +153,12 @@ interface DataSink {
    * Put the [PlatformCoreDataKeys.BGT_DATA_PROVIDER] lambda in the sink
    */
   fun <T : Any> lazy(key: DataKey<T>, data: () -> T?)
+
+  /**
+   * Put the [com.intellij.openapi.actionSystem.CustomizedDataContext.EXPLICIT_NULL] value in the sink
+   * when it is its turn to provide a value.
+   */
+  fun <T : Any> lazyNull(key: DataKey<T>)
 
   /**
    * Put all data from the [provider] in the sink.
