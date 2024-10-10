@@ -2582,6 +2582,11 @@ public abstract class K2IntentionTestGenerated extends AbstractK2IntentionTest {
             runTest("../../../idea/tests/testData/intentions/convertStringTemplateToBuildString/inAnnotation.kt");
         }
 
+        @TestMetadata("KTIJ-30269.kt")
+        public void testKTIJ_30269() throws Exception {
+            runTest("../../../idea/tests/testData/intentions/convertStringTemplateToBuildString/KTIJ-30269.kt");
+        }
+
         @TestMetadata("raw.kt")
         public void testRaw() throws Exception {
             runTest("../../../idea/tests/testData/intentions/convertStringTemplateToBuildString/raw.kt");
@@ -2964,6 +2969,11 @@ public abstract class K2IntentionTestGenerated extends AbstractK2IntentionTest {
             runTest("../../../idea/tests/testData/intentions/convertToConcatenatedString/interpolateStringWithInt.kt");
         }
 
+        @TestMetadata("KTIJ-30269.kt")
+        public void testKTIJ_30269() throws Exception {
+            runTest("../../../idea/tests/testData/intentions/convertToConcatenatedString/KTIJ-30269.kt");
+        }
+
         @TestMetadata("lastExprIsNamedExpression.kt")
         public void testLastExprIsNamedExpression() throws Exception {
             runTest("../../../idea/tests/testData/intentions/convertToConcatenatedString/lastExprIsNamedExpression.kt");
@@ -3198,19 +3208,19 @@ public abstract class K2IntentionTestGenerated extends AbstractK2IntentionTest {
             runTest("../../../idea/tests/testData/intentions/convertToStringTemplate/invalidChar.kt");
         }
 
-        @TestMetadata("kt11295.kt")
-        public void testKt11295() throws Exception {
-            runTest("../../../idea/tests/testData/intentions/convertToStringTemplate/kt11295.kt");
+        @TestMetadata("KTIJ-30491.kt")
+        public void testKTIJ_30491() throws Exception {
+            runTest("../../../idea/tests/testData/intentions/convertToStringTemplate/KTIJ-30491.kt");
         }
 
-        @TestMetadata("ktij30491.kt")
-        public void testKtij30491() throws Exception {
-            runTest("../../../idea/tests/testData/intentions/convertToStringTemplate/ktij30491.kt");
+        @TestMetadata("KTIJ-30491-2.kt")
+        public void testKTIJ_30491_2() throws Exception {
+            runTest("../../../idea/tests/testData/intentions/convertToStringTemplate/KTIJ-30491-2.kt");
         }
 
-        @TestMetadata("ktij30491_2.kt")
-        public void testKtij30491_2() throws Exception {
-            runTest("../../../idea/tests/testData/intentions/convertToStringTemplate/ktij30491_2.kt");
+        @TestMetadata("KT-11295.kt")
+        public void testKT_11295() throws Exception {
+            runTest("../../../idea/tests/testData/intentions/convertToStringTemplate/KT-11295.kt");
         }
 
         @TestMetadata("lambdaInParentheses.kt")
