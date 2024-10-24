@@ -2,6 +2,7 @@
 package com.intellij.ide.trustedProjects
 
 import com.intellij.diagnostic.WindowsDefenderExcludeUtil
+import com.intellij.diagnostic.WindowsDefenderStatisticsCollector
 import com.intellij.icons.AllIcons
 import com.intellij.ide.IdeBundle
 import com.intellij.ide.impl.OpenUntrustedProjectChoice
@@ -134,7 +135,8 @@ internal class TrustedProjectStartupDialog(
             text(message)
           }
           row {
-            checkBox(IdeBundle.message("untrusted.project.warning.trust.location.checkbox", projectPath.parent.name))
+            val trimmedFolderName =  StringUtil.shortenTextWithEllipsis(projectPath.parent.name, 40, 0, true)
+            checkBox(IdeBundle.message("untrusted.project.warning.trust.location.checkbox", trimmedFolderName))
               .bindSelected(trustAll)
               .apply {
                 component.toolTipText = null
@@ -147,7 +149,10 @@ internal class TrustedProjectStartupDialog(
 
                 if (trustAction != null) {
                   val trustButton = getButton(trustAction!!)
-                  val text = if (it.isSelected) IdeBundle.message("untrusted.project.dialog.trust.folder.button", getTrustFolder(it.isSelected).name) else trustButtonText
+                  val text = if (it.isSelected) {
+                    val truncatedParentFolderName = StringUtil.shortenTextWithEllipsis(getTrustFolder(it.isSelected).name, 18, 0, true)
+                    IdeBundle.message("untrusted.project.dialog.trust.folder.button", truncatedParentFolderName)
+                  } else trustButtonText
                   trustButton?.text = text
                 }
                 val trimmedFolderName = StringUtil.shortenTextWithEllipsis(getTrustFolder(it.isSelected).name, 18, 0, true)
@@ -265,7 +270,11 @@ internal class TrustedProjectStartupDialog(
   }
 
   fun getWidowsDefenderPathsToExclude(): List<Path> {
-    return if (windowsDefender.get()) getIdePaths().plus(getTrustFolder(trustAll.get())) else emptyList()
+    return if (windowsDefender.get()) {
+      WindowsDefenderStatisticsCollector.excludedFromTrustDialog(trustAll.get())
+      listOf(*getIdePaths().toTypedArray(), getTrustFolder(trustAll.get()))
+    }
+    else emptyList()
   }
 
   fun getOpenChoice(): OpenUntrustedProjectChoice = userChoice
