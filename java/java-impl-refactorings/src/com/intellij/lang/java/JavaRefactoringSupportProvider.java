@@ -23,6 +23,7 @@ import com.intellij.psi.PsiParameter;
 import com.intellij.psi.PsiRecordComponent;
 import com.intellij.psi.PsiResourceList;
 import com.intellij.psi.PsiVariable;
+import com.intellij.psi.SyntheticElement;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.search.LocalSearchScope;
 import com.intellij.psi.search.PsiSearchHelper;
@@ -87,6 +88,12 @@ public class JavaRefactoringSupportProvider extends JavaBaseRefactoringSupportPr
     }
     if (context instanceof PsiKeyword) return false;
 
+    if (elementToRename instanceof SyntheticElement) {
+      if (elementToRename instanceof PsiMethod method) {
+        PsiClass aClass = method.getContainingClass();
+        if (aClass == null || aClass.isEnum()) return false;
+      }
+    }
     return elementToRename instanceof PsiMember || elementToRename instanceof PsiJavaModule || isCanonicalConstructorParameter(elementToRename);
   }
 
