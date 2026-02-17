@@ -58,7 +58,7 @@ public class JavaRefactoringSupportProvider extends JavaBaseRefactoringSupportPr
   @Override
   public boolean isSafeDeleteAvailable(@NotNull PsiElement element) {
     return element instanceof PsiClass || element instanceof PsiMethod || element instanceof PsiField ||
-           (element instanceof PsiParameter && ((PsiParameter)element).getDeclarationScope() instanceof PsiMethod) ||
+           (element instanceof PsiParameter p && p.getDeclarationScope() instanceof PsiMethod) ||
            element instanceof PsiPackage || element instanceof PsiLocalVariable || element instanceof PsiRecordComponent;
   }
 
@@ -73,7 +73,7 @@ public class JavaRefactoringSupportProvider extends JavaBaseRefactoringSupportPr
   }
 
   @Override
-  public boolean isInplaceRenameAvailable(final @NotNull PsiElement element, final PsiElement context) {
+  public boolean isInplaceRenameAvailable(@NotNull PsiElement element, PsiElement context) {
     return mayRenameInplace(element, context);
   }
 
@@ -170,15 +170,15 @@ public class JavaRefactoringSupportProvider extends JavaBaseRefactoringSupportPr
     return true;
   }
 
-  public static boolean mayRenameInplace(PsiElement elementToRename, final PsiElement nameSuggestionContext) {
+  public static boolean mayRenameInplace(PsiElement elementToRename, PsiElement nameSuggestionContext) {
     if (nameSuggestionContext != null && nameSuggestionContext.getContainingFile() != elementToRename.getContainingFile()) return false;
     if (elementToRename instanceof PsiImplicitClass) return false;
     if (!PsiUtil.isJvmLocalVariable(elementToRename) && !(elementToRename instanceof PsiLabeledStatement)) {
       return false;
     }
     SearchScope useScope = PsiSearchHelper.getInstance(elementToRename.getProject()).getUseScope(elementToRename);
-    if (!(useScope instanceof LocalSearchScope)) return false;
-    PsiElement[] scopeElements = ((LocalSearchScope)useScope).getScope();
+    if (!(useScope instanceof LocalSearchScope scope)) return false;
+    PsiElement[] scopeElements = scope.getScope();
     if (scopeElements.length == 0 && elementToRename instanceof PsiVariable variable && variable.isUnnamed()) return true;
     if (scopeElements.length > 1 &&                          // assume there are no elements with use scopes with holes in them
         !isElementWithComment(scopeElements) &&              // ... except a case of element and it's doc comment
@@ -190,25 +190,23 @@ public class JavaRefactoringSupportProvider extends JavaBaseRefactoringSupportPr
     return PsiTreeUtil.isAncestor(containingFile, scopeElements[0], false);
   }
 
-  private static boolean isElementWithComment(final PsiElement[] scopeElements) {
+  private static boolean isElementWithComment(PsiElement[] scopeElements) {
     if (scopeElements.length > 2) return false;
 
     PsiDocComment comment = null;
     PsiDocCommentOwner owner = null;
     for (PsiElement element : scopeElements) {
-      if (element instanceof PsiDocComment) {
-        comment = (PsiDocComment)element;
+      if (element instanceof PsiDocComment docComment) {
+        comment = docComment;
       }
-      else if (element instanceof PsiDocCommentOwner) owner = (PsiDocCommentOwner)element;
+      else if (element instanceof PsiDocCommentOwner commentOwner) owner = commentOwner;
     }
 
     return comment != null && comment.getOwner() == owner;
   }
 
-  private static boolean isResourceVariable(final PsiElement[] scopeElements) {
-    return scopeElements.length == 2 &&
-           scopeElements[0] instanceof PsiResourceList &&
-           scopeElements[1] instanceof PsiCodeBlock;
+  private static boolean isResourceVariable(PsiElement[] scopeElements) {
+    return scopeElements.length == 2 && scopeElements[0] instanceof PsiResourceList && scopeElements[1] instanceof PsiCodeBlock;
   }
 
   private static boolean isCanonicalConstructorParameter(@NotNull PsiElement elementToRename) {
