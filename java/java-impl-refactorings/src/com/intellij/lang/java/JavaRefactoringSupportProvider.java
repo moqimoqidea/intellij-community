@@ -1,4 +1,4 @@
-// Copyright 2000-2025 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.lang.java;
 
 import com.intellij.lang.LanguageNamesValidation;
@@ -12,6 +12,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiImplicitClass;
 import com.intellij.psi.PsiJavaModule;
+import com.intellij.psi.PsiKeyword;
 import com.intellij.psi.PsiLabeledStatement;
 import com.intellij.psi.PsiLocalVariable;
 import com.intellij.psi.PsiMember;
@@ -84,6 +85,7 @@ public class JavaRefactoringSupportProvider extends JavaBaseRefactoringSupportPr
         return false;
       }
     }
+    if (context instanceof PsiKeyword) return false;
 
     return elementToRename instanceof PsiMember || elementToRename instanceof PsiJavaModule || isCanonicalConstructorParameter(elementToRename);
   }

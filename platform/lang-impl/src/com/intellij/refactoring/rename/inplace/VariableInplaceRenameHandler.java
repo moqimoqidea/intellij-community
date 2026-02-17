@@ -1,8 +1,8 @@
-// Copyright 2000-2024 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
-
+// Copyright 2000-2026 JetBrains s.r.o. and contributors. Use of this source code is governed by the Apache 2.0 license.
 package com.intellij.refactoring.rename.inplace;
 
 import com.intellij.codeInsight.lookup.LookupManager;
+import com.intellij.injected.editor.EditorWindow;
 import com.intellij.lang.LanguageRefactoringSupport;
 import com.intellij.lang.refactoring.RefactoringSupportProvider;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -33,7 +33,7 @@ public class VariableInplaceRenameHandler implements RenameHandler {
   public final boolean isAvailableOnDataContext(@NotNull DataContext dataContext) {
     final PsiElement element = PsiElementRenameHandler.getElement(dataContext);
     final Editor editor = CommonDataKeys.EDITOR.getData(dataContext);
-    final PsiFile file = CommonDataKeys.PSI_FILE.getData(dataContext);
+    final PsiFile file = editor instanceof EditorWindow window ? window.getInjectedFile() : CommonDataKeys.PSI_FILE.getData(dataContext);
     if (editor == null || file == null) return false;
 
     if (ourPreventInlineRenameFlag.get() != null) {
