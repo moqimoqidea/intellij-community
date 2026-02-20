@@ -87,12 +87,10 @@ public final class RedundantMethodOverrideInspection extends BaseInspection {
   @Override
   protected LocalQuickFix @NotNull [] buildFixes(Object... infos) {
     List<LocalQuickFix> quickFixes = new ArrayList<>();
-    if (infos.length > 1 && infos[1] instanceof Boolean canBeRemoved && canBeRemoved) {
-      quickFixes.add(new RedundantMethodOverrideFix());
-    }
-    if (infos.length > 0 && infos[0] instanceof Boolean isDelegate && !isDelegate) {
-      quickFixes.add(new ReplaceWithSuperDelegateFix());
-    }
+    boolean isDelegate = (boolean)infos[0];
+    boolean canBeRemoved = (boolean)infos[1];
+    if (canBeRemoved) quickFixes.add(new RedundantMethodOverrideFix());
+    if (!isDelegate && ignoreDelegates) quickFixes.add(new ReplaceWithSuperDelegateFix());
     return quickFixes.toArray(LocalQuickFix.EMPTY_ARRAY);
   }
 
