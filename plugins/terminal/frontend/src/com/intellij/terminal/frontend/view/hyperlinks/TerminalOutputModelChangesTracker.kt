@@ -1,15 +1,16 @@
 package com.intellij.terminal.frontend.view.hyperlinks
 
 import com.intellij.openapi.Disposable
-import com.intellij.terminal.frontend.view.hyperlinks.TerminalOutputModelChangesTracker.Companion.MAX_CHANGES_HISTORY_LENGTH
 import com.intellij.util.concurrency.annotations.RequiresEdt
+import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.plugins.terminal.view.TerminalContentChangeEvent
 import org.jetbrains.plugins.terminal.view.TerminalLineIndex
 import org.jetbrains.plugins.terminal.view.TerminalOffset
 import org.jetbrains.plugins.terminal.view.TerminalOutputModel
 import org.jetbrains.plugins.terminal.view.TerminalOutputModelListener
 
-internal class TerminalOutputModelChangesTracker(
+@ApiStatus.Internal
+class TerminalOutputModelChangesTracker(
   private val outputModel: TerminalOutputModel,
   parentDisposable: Disposable,
 ) {
@@ -55,6 +56,12 @@ internal class TerminalOutputModelChangesTracker(
    */
   @RequiresEdt
   fun getFirstChangedOffsetSinceStamp(modificationStamp: Long): TerminalOffset {
+    // Record a change that already happened but hasn't been saved into the history,
+    // so a hyperlinks result processed between flushes sees the up-to-date changed region.
+    if (contentChanged) {
+      recordChange(maxOf(firstChangedLine, outputModel.firstLineIndex))
+    }
+
     val searchResult = changesHistory.binarySearch { changeInfo ->
       if (changeInfo.modificationStamp <= modificationStamp) -1 else 1
     }
@@ -87,10 +94,6 @@ internal class TerminalOutputModelChangesTracker(
   )
 
   companion object {
-    /**
-     * Covers the changes in the output model history
-     * for [MAX_CHANGES_HISTORY_LENGTH] * [HYPERLINKS_OUTPUT_MODEL_FLUSH_DELAY] = 2 seconds
-     */
-    private const val MAX_CHANGES_HISTORY_LENGTH = 100
+    private const val MAX_CHANGES_HISTORY_LENGTH = 200
   }
 }
