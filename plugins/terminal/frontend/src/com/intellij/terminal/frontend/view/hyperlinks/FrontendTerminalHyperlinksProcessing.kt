@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ModalityState
 import com.intellij.openapi.application.UI
 import com.intellij.openapi.application.asContextElement
 import com.intellij.openapi.diagnostic.fileLogger
+import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.editor.event.EditorMouseEvent
 import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.project.Project
@@ -221,6 +222,11 @@ private fun getContentUpdate(
 ): TerminalOutputContentUpdate? {
   val firstChangedLine = tracker.getFirstChangedLineAndReset() ?: return null
   val startOffset = outputModel.getStartOfLine(firstChangedLine)
+  LOG.trace {
+    "SEND contentUpdate: firstChangedLine=$firstChangedLine startOffset=$startOffset endLine=${outputModel.lastLineIndex} " +
+    "modStamp=${outputModel.modificationStamp} trimStartOffset=${outputModel.startOffset} " +
+    "textLen=${(outputModel.endOffset - startOffset)}"
+  }
   return TerminalOutputContentUpdate(
     charsSequence = outputModel.getText(startOffset, outputModel.endOffset),
     startLine = firstChangedLine,
@@ -281,6 +287,10 @@ private suspend fun processHyperlinksOutputEvent(
 ) {
   when (event) {
     is TerminalHyperlinksOutputEvent.HyperlinksUpdated -> {
+      LOG.trace {
+        "HyperlinksUpdated: stamp=${event.documentModificationStamp} covered=[${event.coveredStartOffset},${event.coveredEndOffset}) " +
+        "hyperlinksInEvent=${event.hyperlinks.size}"
+      }
       processHyperlinksUpdatedEvent(
         outputModel = outputModel,
         hyperlinksModel = hyperlinksModel,
@@ -291,9 +301,11 @@ private suspend fun processHyperlinksOutputEvent(
       )
     }
     is TerminalHyperlinksOutputEvent.TaskFinished -> {
+      LOG.trace { "TaskFinished: stamp=${event.documentModificationStamp}" }
       lastFinishedTaskStamp.value = event.documentModificationStamp
     }
     is TerminalHyperlinksOutputEvent.FiltersUpdated -> {
+      LOG.trace { "FiltersUpdated: re-sending whole content" }
       // Send the all-existing content to re-process it.
       val contentUpdate = TerminalOutputContentUpdate(
         charsSequence = outputModel.getText(outputModel.startOffset, outputModel.endOffset),
@@ -324,9 +336,13 @@ private fun processHyperlinksUpdatedEvent(
   val coveredEnd = event.coveredEndOffset
 
   val firstChangedOffset = outputModelChangesTracker.getFirstChangedOffsetSinceStamp(event.documentModificationStamp).toAbsolute()
-  val allHyperlinks = event.hyperlinks
   val applyUpToOffset = minOf(coveredEnd, firstChangedOffset)
+  LOG.trace {
+    "processHyperlinksUpdatedEvent: modelStart=$modelStartOffset modelEnd=$modelEndOffset covered=[$coveredStart,$coveredEnd) " +
+    "firstChangedOffset=$firstChangedOffset applyUpTo=$applyUpToOffset eventLinks=${event.hyperlinks.size}"
+  }
   if (applyUpToOffset <= coveredStart) {
+    LOG.trace { "processHyperlinksUpdatedEvent skip stale: the whole covered range changed since the snapshot" }
     return
   }
 
