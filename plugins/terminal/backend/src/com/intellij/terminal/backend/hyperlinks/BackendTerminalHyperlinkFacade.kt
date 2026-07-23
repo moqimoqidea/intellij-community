@@ -70,10 +70,7 @@ internal class BackendTerminalHyperlinkFacade(
   }
 
   fun updateModelState(event: TerminalHyperlinksOutputEvent.HyperlinksUpdated): Boolean {
-    val removedFrom = event.removeFromOffset
-    if (removedFrom != null) {
-      model.removeHyperlinks(removedFrom)
-    }
+    model.removeHyperlinks(event.coveredStartOffset, event.coveredEndOffset)
     model.addHyperlinks(event.hyperlinks.map { it.toFilterResultInfo() })
     return true
   }

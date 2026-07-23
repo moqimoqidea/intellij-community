@@ -318,25 +318,37 @@ private fun processHyperlinksUpdatedEvent(
   event: TerminalHyperlinksOutputEvent.HyperlinksUpdated,
   onLinkClicked: (TerminalHyperlinkId, EditorMouseEvent) -> Unit,
 ) {
-  val removeFromOffset = event.removeFromOffset
-  if (removeFromOffset != null) {
-    val removed = hyperlinksModel.removeHyperlinks(removeFromOffset)
-    applier.removeDecorations(removed.map { it.toPlatformId() })
-  }
-
   val modelStartOffset = outputModel.startOffset.toAbsolute()
+  val modelEndOffset = outputModel.endOffset.toAbsolute()
+  val coveredStart = event.coveredStartOffset
+  val coveredEnd = event.coveredEndOffset
+
   val firstChangedOffset = outputModelChangesTracker.getFirstChangedOffsetSinceStamp(event.documentModificationStamp).toAbsolute()
   val allHyperlinks = event.hyperlinks
+  val applyUpToOffset = minOf(coveredEnd, firstChangedOffset)
+  if (applyUpToOffset <= coveredStart) {
+    return
+  }
+
+  // Extend the removal past the current output end only when this event fully covers up to the end and none
+  // of the covered range changed since the snapshot, so stale entries left beyond the end are purged out of the model.
+  val coveredRangeUnchanged = firstChangedOffset >= coveredEnd
+  val reachesOutputEnd = coveredEnd >= modelEndOffset
+  val removeUpToOffset = if (coveredRangeUnchanged && reachesOutputEnd) Long.MAX_VALUE else applyUpToOffset
+  val removed = hyperlinksModel.removeHyperlinks(coveredStart, removeUpToOffset)
+  applier.removeDecorations(removed.map { it.toPlatformId() })
+
+  val newLinks = event.hyperlinks
     .asSequence()
     .map { it.toFilterResultInfo() }
     .filter { it.absoluteStartOffset >= modelStartOffset }  // Filter out trimmed hyperlinks
-    .filter { it.absoluteEndOffset <= firstChangedOffset }   // Filter out hyperlinks in the range that was changed during links' calculation
+    .filter { it.absoluteEndOffset <= applyUpToOffset }   // Filter out hyperlinks in the range that was changed during links' calculation
     .toList()
 
   // Add only hyperlinks that can be transformed into decorations
-  val hyperlinks = ArrayList<TerminalFilterResultInfo>(allHyperlinks.size)
-  val decorations = ArrayList<EditorTextDecoration>(allHyperlinks.size)
-  for (link in allHyperlinks) {
+  val hyperlinks = ArrayList<TerminalFilterResultInfo>(newLinks.size)
+  val decorations = ArrayList<EditorTextDecoration>(newLinks.size)
+  for (link in newLinks) {
     val decoration = link.toEditorDecoration(outputModel, onLinkClicked) ?: continue
     decorations.add(decoration)
     hyperlinks.add(link)

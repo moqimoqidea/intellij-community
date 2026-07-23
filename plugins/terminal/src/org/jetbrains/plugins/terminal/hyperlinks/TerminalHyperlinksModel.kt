@@ -41,11 +41,18 @@ class TerminalHyperlinksModel(
     this.hyperlinks = allHyperlinks
   }
 
-  fun removeHyperlinks(fromAbsoluteOffset: Long): Collection<TerminalHyperlinkId> {
+  /**
+   * Removes hyperlinks whose end offset falls into `[fromAbsoluteOffset, toAbsoluteOffset]`,
+   * as well as any hyperlinks trimmed from the start of the output.
+   */
+  fun removeHyperlinks(
+    fromAbsoluteOffset: Long,
+    toAbsoluteOffset: Long = Long.MAX_VALUE,
+  ): Collection<TerminalHyperlinkId> {
     if (hyperlinks.isEmpty()) return emptyList()
     val removedIds = mutableListOf<TerminalHyperlinkId>()
     removeTrimmedHyperlinks(removedIds)
-    removeHyperlinksFromOffset(fromAbsoluteOffset, removedIds)
+    removeHyperlinksInOffsetRange(fromAbsoluteOffset, toAbsoluteOffset, removedIds)
     logHyperlinksRemoved(fromAbsoluteOffset, removedIds)
     return removedIds
   }
@@ -60,16 +67,25 @@ class TerminalHyperlinksModel(
     removeHyperlinksInRange(0, removeUntilIndex, removedIds)
   }
 
-  private fun removeHyperlinksFromOffset(
+  private fun removeHyperlinksInOffsetRange(
     fromAbsoluteOffset: Long,
+    toAbsoluteOffset: Long,
     removedIds: MutableList<TerminalHyperlinkId>,
   ) {
+    // The list is sorted by absoluteEndOffset.
     // We use absoluteEndOffset here because if some link starts before the affected offset, but ends after it,
     // we still need to remove it to avoid a partially removed link that can overlap with new links.
-    val removeFromIndex = hyperlinks.binarySearch { it.absoluteEndOffset.compareTo(fromAbsoluteOffset) }.let {
-      if (it >= 0) it else -it - 1
+    // Lower bound (inclusive): the first link whose end offset reaches fromAbsoluteOffset.
+    val removeFromIndex = hyperlinks.binarySearch {
+      if (it.absoluteEndOffset < fromAbsoluteOffset) -1 else 1
+    }.let { -it - 1 }
+    // Upper bound (exclusive): the first link whose end offset is past toAbsoluteOffset.
+    val removeUntilIndex = hyperlinks.binarySearch {
+      if (it.absoluteEndOffset <= toAbsoluteOffset) -1 else 1
+    }.let { -it - 1 }
+    if (removeFromIndex < removeUntilIndex) {
+      removeHyperlinksInRange(removeFromIndex, removeUntilIndex, removedIds)
     }
-    removeHyperlinksInRange(removeFromIndex, hyperlinks.size, removedIds)
   }
 
   private fun removeHyperlinksInRange(
